@@ -35,70 +35,86 @@ const ThryveVAPortal = () => {
     }, {})
   );
 
-  const handleAddTask = (day, newTask) => {
-    if (!newTask) return;
+  const handleAddTask = (day, taskText) => {
+    if (!taskText) return;
+    const newTask = {
+      id: Date.now(),
+      text: taskText,
+      completed: false,
+      notes: ''
+    };
     setTasksByDay(prev => ({
       ...prev,
-      [day]: [
-        ...prev[day],
-        { text: newTask, completed: false, notes: '', id: Date.now() }
-      ]
+      [day]: [...prev[day], newTask]
     }));
   };
 
-  const handleToggle = (day, id) => {
+  const handleToggle = (day, taskId) => {
     setTasksByDay(prev => ({
       ...prev,
       [day]: prev[day].map(task =>
-        task.id === id ? { ...task, completed: !task.completed } : task
+        task.id === taskId ? { ...task, completed: !task.completed } : task
       )
     }));
   };
 
-  const handleNoteChange = (day, id, value) => {
+  const handleNoteChange = (day, taskId, note) => {
     setTasksByDay(prev => ({
       ...prev,
       [day]: prev[day].map(task =>
-        task.id === id ? { ...task, notes: value } : task
+        task.id === taskId ? { ...task, notes: note } : task
       )
     }));
   };
 
-  const handleDelete = (day, id) => {
+  const handleDelete = (day, taskId) => {
     setTasksByDay(prev => ({
       ...prev,
-      [day]: prev[day].filter(task => task.id !== id)
+      [day]: prev[day].filter(task => task.id !== taskId)
     }));
   };
 
   return (
-    <div className="min-h-screen bg-white text-black p-6 md:p-10">
-      <h1 className="text-3xl font-bold mb-6 text-center">Thryve VA Dashboard</h1>
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
-        {weekdays.map(day => (
-          <div key={day} className="bg-gray-100 rounded-2xl shadow p-4">
-            <h2 className="text-xl font-semibold mb-3 text-center">{day}</h2>
+    <div className="min-h-screen bg-gray-50 text-gray-900 p-6 md:p-10 lg:p-12 max-w-7xl mx-auto">
+      <header className="flex flex-col items-center justify-center mb-10 md:mb-12">
+        <img
+          src="https://storage.googleapis.com/msgsndr/CK9edYkGjycMkpkeDDL9/media/6838be356ae59c047994b53f.svg"
+          alt="Thryve Credit Logo"
+          className="h-24 w-auto mb-6"
+        />
+        <h1 className="text-4xl md:text-5xl font-extrabold text-blue-700 tracking-tight">Thryve VA Dashboard</h1>
+        <p className="text-lg text-gray-600 mt-2">Empowering consistent growth, one task at a time.</p>
+      </header>
 
-            <div className="mb-3 flex gap-2">
+      <div className="text-center mb-8">
+        <button className="bg-blue-600 text-white rounded-lg px-6 py-3 font-semibold hover:bg-blue-700 transition duration-200 ease-in-out shadow-md">
+          Reset for New Week (Admin Only)
+        </button>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 md:gap-8 mb-12">
+        {weekdays.map(day => (
+          <div key={day} className="bg-white rounded-2xl shadow-lg p-5 border border-gray-100">
+            <h2 className="text-2xl font-bold mb-4 text-center text-blue-700">{day}</h2>
+
+            <div className="mb-4">
               <select
-                className="w-full border border-gray-300 rounded px-2 py-1"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 ease-in-out"
                 onChange={e => {
                   handleAddTask(day, e.target.value);
                   e.target.selectedIndex = 0;
                 }}
               >
-                <option value="">+ Quick Add from Template</option>
+                <option value="" className="text-gray-500">+ Quick Add from Template</option>
                 {taskTemplates.map(task => (
-                  <option key={task} value={task}>
-                    {task}
-                  </option>
+                  <option key={task} value={task}>{task}</option>
                 ))}
               </select>
             </div>
 
-            <div className="mb-4 flex gap-2">
+            <div className="mb-6">
               <input
-                className="flex-grow border border-gray-300 rounded px-2 py-1"
+                className="flex-grow border border-gray-300 rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 ease-in-out w-full"
                 type="text"
                 placeholder="Type new task..."
                 onKeyDown={e => {
@@ -110,26 +126,24 @@ const ThryveVAPortal = () => {
               />
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-4">
               {tasksByDay[day].map(task => (
                 <div
                   key={task.id}
-                  className="bg-white rounded-xl shadow-sm p-3 border border-gray-200"
+                  className={`rounded-xl shadow-sm p-4 border border-gray-200 transition duration-200 ease-in-out ${task.completed ? 'bg-blue-50' : 'bg-white hover:shadow-md'}`}
                 >
                   <div className="flex items-start justify-between">
-                    <label className="flex items-start gap-2">
+                    <label className="flex items-start gap-3 flex-grow cursor-pointer">
                       <input
                         type="checkbox"
-                        className="mt-1"
+                        className="mt-1 w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-offset-0"
                         checked={task.completed}
                         onChange={() => handleToggle(day, task.id)}
                       />
-                      <span className={`text-sm ${task.completed ? 'line-through text-gray-500' : ''}`}>
-                        {task.text}
-                      </span>
+                      <span className={`text-base font-medium ${task.completed ? 'line-through text-gray-500' : 'text-gray-800'}`}>{task.text}</span>
                     </label>
                     <button
-                      className="text-sm text-red-500 hover:underline"
+                      className="ml-4 text-sm text-red-500 hover:text-red-700 font-semibold transition duration-200 ease-in-out"
                       onClick={() => handleDelete(day, task.id)}
                     >
                       Delete
@@ -137,7 +151,7 @@ const ThryveVAPortal = () => {
                   </div>
                   <textarea
                     placeholder="Add notes..."
-                    className="w-full text-sm mt-2 p-2 border border-gray-300 rounded"
+                    className="w-full text-sm mt-3 p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-400 focus:border-transparent transition duration-200 ease-in-out resize-y text-gray-700"
                     rows={2}
                     value={task.notes}
                     onChange={e => handleNoteChange(day, task.id, e.target.value)}
